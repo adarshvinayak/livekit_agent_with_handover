@@ -1,4 +1,4 @@
-# LiveKit AI-to-Human Handoff Agent
+# LiveKit Agent with AI-to-Human Handoff feature
 
 <p>
   <a h<p>
