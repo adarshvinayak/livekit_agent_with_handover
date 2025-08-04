@@ -1,8 +1,4 @@
-<a href="https://livekit.io/">
-  <img src="./.github/assets/livekit-mark.png" alt="LiveKit logo" width="100" height="100">
-</a>
-
-# Python Multimodal Voice Agent
+# LiveKit AI-to-Human Handoff Agent
 
 <p>
   <a href="https://cloud.livekit.io/projects/p_/sandbox"><strong>Deploy a sandbox app</strong></a>
@@ -14,22 +10,28 @@
   <a href="https://blog.livekit.io/">Blog</a>
 </p>
 
-# LiveKit Agent with Tavus Avatar Integration
+A LiveKit-based AI agent that automatically detects when users request human assistance and seamlessly hands off the call to a human agent with secure join URLs.
 
-A voice AI agent built with LiveKit Agents framework, featuring:
-- 🎤 **Speech-to-Text**: Deepgram Nova-3 model
-- 🧠 **LLM**: OpenAI GPT models  
-- 🔊 **Text-to-Speech**: Cartesia Sonic-2
-- 👤 **Avatar**: Tavus realistic avatar
-- 🎯 **Voice Activity Detection**: Silero VAD
+## 🚀 Features
 
-## Prerequisites
+- **Automatic Handoff Detection**: Uses LLM function tools to detect human assistance requests
+- **Secure URL Generation**: Creates secure LiveKit join URLs with proper authentication
+- **Seamless Call Handoff**: Smooth transition from AI to human agent
+- **Automatic AI Shutdown**: AI agent gracefully exits when human agent joins
+- **Comprehensive Logging**: Tracks all handoff events
+- **🎤 Speech-to-Text**: Deepgram Nova-3 model
+- **�� LLM**: OpenAI GPT-4o with function tools
+- **🔊 Text-to-Speech**: OpenAI TTS
+- **🎯 Voice Activity Detection**: Silero VAD
+
+## 📋 Prerequisites
 
 - Python 3.8 or higher
 - Virtual environment (recommended)
+- LiveKit server instance
 - API keys for required services
 
-## Setup Instructions
+## ��️ Installation
 
 ### 1. Clone and Setup Environment
 
@@ -44,7 +46,7 @@ venv\Scripts\activate
 source venv/bin/activate
 
 # Install dependencies
-pip install -r requirements.txt
+pip install livekit livekit-agents livekit-plugins-openai livekit-plugins-deepgram livekit-plugins-silero python-dotenv
 ```
 
 ### 2. Environment Configuration
@@ -53,31 +55,76 @@ Create a `.env.local` file in the project root and add your API keys:
 
 ```env
 # Required API Keys
-DEEPGRAM_API_KEY=your_deepgram_api_key_here
-CARTESIA_API_KEY=your_cartesia_api_key_here
-OPENAI_API_KEY=your_openai_api_key_here
-
-# Optional: LiveKit Server Configuration (for production)
-LIVEKIT_URL=your_livekit_url
+LIVEKIT_URL=your_livekit_server_url
+LIVEKIT_WS_URL=your_livekit_websocket_url
 LIVEKIT_API_KEY=your_livekit_api_key
 LIVEKIT_API_SECRET=your_livekit_api_secret
+OPENAI_API_KEY=your_openai_api_key
+DEEPGRAM_API_KEY=your_deepgram_api_key
 ```
 
 ### 3. Get API Keys
 
 You'll need to sign up for these services and get API keys:
 
-- **Deepgram**: [console.deepgram.com](https://console.deepgram.com/)
-- **Cartesia**: [play.cartesia.ai](https://play.cartesia.ai/)
+- **LiveKit**: [cloud.livekit.io](https://cloud.livekit.io/) or self-hosted
 - **OpenAI**: [platform.openai.com](https://platform.openai.com/)
+- **Deepgram**: [console.deepgram.com](https://console.deepgram.com/)
 
-## Running the Agent
+## ⚙️ Configuration
+
+### Required Environment Variables
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `LIVEKIT_URL` | Your LiveKit server URL | `https://your-livekit-server.com` |
+| `LIVEKIT_WS_URL` | LiveKit WebSocket URL | `wss://your-livekit-server.com` |
+| `LIVEKIT_API_KEY` | LiveKit API key | `your_api_key_here` |
+| `LIVEKIT_API_SECRET` | LiveKit API secret | `your_api_secret_here` |
+| `OPENAI_API_KEY` | OpenAI API key for LLM | `sk-...` |
+| `DEEPGRAM_API_KEY` | Deepgram API key for STT | `your_deepgram_key` |
+
+## �� How It Works
+
+### 1. **Agent Initialization**
+- Creates a `HandoffAgent` with specific instructions for handling human requests
+- Sets up LiveKit connection with audio-only subscription
+- Initializes LLM (GPT-4o), STT (Deepgram), TTS (OpenAI), and VAD (Silero) plugins
+
+### 2. **Handoff Detection**
+The agent uses LLM function tools to detect when users request human assistance. The LLM automatically calls the `transfer_to_human_agent()` function when users say phrases like:
+- "I want to speak to a human"
+- "Connect me to a manager"
+- "I need to talk to a supervisor"
+- "Get me a representative"
+- And many more variations
+
+### 3. **URL Generation Process**
+When handoff is detected:
+1. **Token Creation**: Generates a secure LiveKit access token for the human agent with proper grants
+2. **URL Assembly**: Creates a complete join URL using `https://meet.livekit.io/custom` with proper parameters
+3. **Display**: Shows the URL in the terminal with clear formatting
+4. **Logging**: Records the handoff event for tracking
+
+### 4. **Human Agent Handoff**
+- Human agent receives the generated URL
+- They can join the call using the secure token
+- AI agent automatically detects human agent arrival (identity starts with "human-agent-")
+- AI agent gracefully shuts down when human joins
+
+## �� Usage
+
+### Running the Agent
+
+```bash
+python agent_backup.py
+```
 
 ### Console Mode (Testing)
 For local testing with microphone input:
 
 ```bash
-python agent.py console
+python agent_backup.py console
 ```
 
 **Console Controls:**
@@ -85,75 +132,4 @@ python agent.py console
 - Press `Q` to quit
 - Speak into your microphone to interact with the agent
 
-### Development Mode
-For development with hot reloading:
-
-```bash
-python agent.py dev
-```
-
-### Production Mode
-For production deployment:
-
-```bash
-python agent.py start
-```
-
-## Agent Features
-
-### Current Configuration
-- **Replica ID**: `r6ae5b6efc9d` (Tavus avatar)
-- **Persona ID**: `pc55154f229a` (Tavus persona)
-- **Voice**: Cartesia Sonic-2 with voice ID `f786b574-daa5-4673-aa0c-cbe3e8534c02`
-- **STT Model**: Deepgram Nova-3
-- **LLM**: OpenAI GPT (default model)
-
-### Customization
-You can modify the agent behavior in `agent.py`:
-
-- Change avatar/persona IDs in the Tavus configuration
-- Update voice settings in Cartesia TTS
-- Modify agent instructions
-- Switch LLM models
-
-## Frontend Integration
-
-This agent can work with:
-- LiveKit's [Agents Playground](https://agents.livekit.io/)
-- Custom web/mobile frontends using LiveKit SDKs
-- Telephony integration via LiveKit SIP
-
-## Troubleshooting
-
-### Common Issues
-
-1. **Import Errors**: Make sure you're using LiveKit Agents 1.1.5+
-2. **Missing API Keys**: Verify all required keys are set in `.env.local`
-3. **Audio Issues**: Check microphone permissions and device selection
-4. **Network Issues**: Ensure firewall allows WebRTC connections
-
-### Debug Mode
-The agent includes debug logging. Check console output for detailed information.
-
-## Project Structure
-
-```
-lk-agent-avatar/
-├── agent.py           # Main agent code
-├── requirements.txt   # Python dependencies
-├── .env.local        # API keys (create this)
-├── README.md         # This file
-└── venv/             # Virtual environment
-```
-
-## Documentation
-
-- [LiveKit Agents Documentation](https://docs.livekit.io/agents/)
-- [LiveKit Python SDK](https://docs.livekit.io/realtime/client/python/)
-- [Tavus API Documentation](https://docs.tavus.io/)
-
-## Support
-
-For issues and questions:
-- [LiveKit Community Slack](https://livekit.io/join-slack)
-- [GitHub Issues](https://github.com/livekit/agents/issues)
+## 📁 File Structure
