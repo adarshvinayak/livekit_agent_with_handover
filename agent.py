@@ -22,7 +22,7 @@ from livekit.agents import (
     AgentSession,
     get_job_context,
 )
-# The correct decorator for creating tools for the LLM.
+# The decorator for creating tools for the LLM.
 from livekit.agents.llm import function_tool
 from livekit.agents.voice import ErrorEvent
 
@@ -158,8 +158,6 @@ async def entrypoint(ctx: JobContext):
     
     await agent_finished_event.wait()
 
-    # --- THE FINAL CORRECTION ---
-    # Use 'aclose()' for the asynchronous cleanup of the session.
     logger.info("Shutdown signaled. Closing agent session immediately.")
     await session.aclose()
     
